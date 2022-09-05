@@ -4,7 +4,7 @@ from rest_framework import HTTP_HEADER_ENCODING
 
 class CustomAuth(TokenAuthentication):
     def authenticate(self, request):
-        auth = request.COOKIES.get('Token', b'')
+        auth = request.COOKIES.get('token', b'')
         if isinstance(auth, str):
             auth = auth.encode(HTTP_HEADER_ENCODING)
 
