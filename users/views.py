@@ -4,7 +4,7 @@ from knox.views import LogoutView as KnoxLogoutView
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.decorators import permission_classes
 from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -47,7 +47,9 @@ class Register(APIView):
         return Response(user_serializer.data, status=201)
 
 
+@permission_classes((IsAuthenticated,))
 class UserView(APIView):
+
     @staticmethod
     def get(request):
         user_id = request.user.id
@@ -58,10 +60,11 @@ class UserView(APIView):
         if not user.is_active:
             raise AuthenticationFailed('User is not active!')
 
-        serializer = UserSerializer(data=user)
+        serializer = UserSerializer(user)
         return Response(serializer.data, status=200)
 
 
+@permission_classes((IsAuthenticated,))
 class UserProfileView(APIView):
     @staticmethod
     def get(request):
