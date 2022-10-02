@@ -42,3 +42,9 @@ class ProductSerializer(serializers.ModelSerializer):
             'created',
             'updated',
         ]
+
+    def create(self, validated_data):
+        category_data = validated_data.pop('category')
+        category = ProductCategorySerializer.create(ProductCategorySerializer(), validated_data=category_data)
+        product = Product.objects.create(category=category, **validated_data)
+        return product

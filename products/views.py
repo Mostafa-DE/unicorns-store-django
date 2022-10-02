@@ -18,21 +18,3 @@ class ProductView(APIView):
         product = Product.objects.get(category__slug=category, slug=slug)
         serializer = ProductSerializer(product)
         return Response(serializer.data, status=200)
-
-    # @staticmethod
-    # def put(request):
-    #     product_id = request.product.id
-    #     product = Product.objects.get(id=product_id)
-    #
-    #     serializer = ProductSerializer(instance=product, data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     serializer.save()
-    #     return Response(serializer.data)
-    #
-    # @staticmethod
-    # def delete(request):
-    #     product_id = request.product.id
-    #     product = Product.objects.get(id=product_id)
-    #
-    #     product.delete()
-    #     return Response(status=204)

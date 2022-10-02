@@ -91,7 +91,6 @@ class UserProfileView(APIView):
 
 @permission_classes((AllowAny,))
 class Logout(KnoxLogoutView):
-    authentication_classes = []
 
     def post(self, request, format=None):
         logout(request)
