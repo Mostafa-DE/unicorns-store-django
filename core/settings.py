@@ -47,8 +47,6 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': ('baseAuth.knox_auth.CustomAuth',),
 }
 
-AUTH_USER_MODEL = 'users.User'
-
 REST_KNOX = {'TOKEN_TTL': timedelta(hours=168)}
 
 MIDDLEWARE = [

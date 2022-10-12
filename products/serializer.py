@@ -39,6 +39,9 @@ class ProductSerializer(serializers.ModelSerializer):
             'price',
             'stock',
             'available',
+            'pre_order',
+            'made_in',
+            'sale_percentage',
             'created',
             'updated',
         ]
