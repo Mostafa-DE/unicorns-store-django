@@ -39,12 +39,13 @@ INSTALLED_APPS = [
     'knox',
     'main',
     'users',
-    'products'
+    'products',
+    'purchasing.cart',
 
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': ('baseAuth.knox_auth.CustomAuth',),
+    'DEFAULT_AUTHENTICATION_CLASSES': ('core.knox_auth.CustomAuth',),
 }
 
 REST_KNOX = {'TOKEN_TTL': timedelta(hours=168)}
