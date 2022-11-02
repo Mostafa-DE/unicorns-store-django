@@ -13,6 +13,7 @@ class Order(models.Model):
     last_name = models.CharField(max_length=50)
     email = models.EmailField()
     address = models.CharField(max_length=250)
+    building_number = models.PositiveIntegerField()
     phone = models.CharField(max_length=20)
     city = models.CharField(max_length=100)
     order_number = models.CharField(max_length=20, null=True, blank=True)
@@ -27,16 +28,16 @@ class Order(models.Model):
         return total
 
     def __str__(self):
-        return self.user.username
+        return self.first_name
 
 
 class OrderLine(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_lines')
-    product = models.ForeignKey(Product, on_delete=models.SET_NULL, related_name='order_lines', unique=False, null=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='order_lines', unique=False)
     quantity = models.PositiveIntegerField()
 
     def get_total_line(self):
         return self.product.price * self.quantity
 
     def __str__(self):
-        return f"{self.order.user.username} - {self.product.name}"
+        return f"{self.order.first_name} - {self.product.name}"

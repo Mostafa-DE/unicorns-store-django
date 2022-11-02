@@ -41,7 +41,7 @@ class ProductSerializer(serializers.ModelSerializer):
             'available',
             'pre_order',
             'made_in',
-            'sale_percentage',
+            'discount_percentage',
             'created',
             'updated',
         ]
