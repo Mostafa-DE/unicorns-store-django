@@ -35,7 +35,7 @@ class Product(models.Model):
     available = models.BooleanField(default=True)
     pre_order = models.BooleanField(default=False)
     made_in = models.CharField(max_length=50, blank=True)
-    sale_percentage = models.PositiveIntegerField(default=0)
+    discount_percentage = models.PositiveIntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
