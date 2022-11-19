@@ -11,6 +11,12 @@ from ..cart.models import Cart
 class OrderView(APIView):
     @staticmethod
     def get(request):
+        if not request.user.is_authenticated:
+            return Response(
+                {'error': "No orders found, consider to login first to save your orders"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
         orders = Order.objects.filter(user=request.user)
         serializer = OrderSerializer(orders, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -40,6 +46,8 @@ class OrderView(APIView):
             product.save()
 
         if request.user.id:
+            order.user = request.user
+            order.save()
             cart = Cart.objects.get(user=request.user)
             cart.cart_items.all().delete()
 

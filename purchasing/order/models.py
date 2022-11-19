@@ -1,7 +1,8 @@
+from decimal import Decimal
+
 from django.db import models
 from django.contrib.auth import get_user_model
 from ..cart.models import Cart
-
 from products.models import Product
 
 User = get_user_model()
@@ -25,10 +26,12 @@ class Order(models.Model):
         total = 0
         for line in self.order_lines.all():
             total += line.get_total_line()
-        return total
+        return Decimal(total)
 
     def __str__(self):
-        return self.first_name
+        if self.user:
+            return f'{self.user.username} - {self.order_number}'
+        return f'[Anonymous] {self.first_name} {self.last_name} - {self.order_number}'
 
 
 class OrderLine(models.Model):
