@@ -1,6 +1,7 @@
-from django.contrib.auth import login, logout
-from knox.views import LoginView as KnoxLoginView
-from knox.views import LogoutView as KnoxLogoutView
+from django.contrib.auth import login
+from django.db import transaction
+from knox.models import AuthToken
+from knox.views import LoginView as KnoxLoginView, LogoutView as KnoxLogoutView
 from rest_framework import status
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.decorators import permission_classes
@@ -45,8 +46,10 @@ class Register(APIView):
         user_profile_serializer = UserProfileSerializer(data=request.data)
         user_serializer.is_valid(raise_exception=True)
         user_profile_serializer.is_valid(raise_exception=True)
-        user_serializer.save()
-        user_profile_serializer.save(user=get_user_model().objects.get(username=username))
+        with transaction.atomic():
+            user_serializer.save()
+            user_profile_serializer.save(user=get_user_model().objects.get(username=username))
+
         return Response(user_serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -54,16 +57,21 @@ class Register(APIView):
 class UserView(APIView):
     @staticmethod
     def get(request):
-        user_id = request.user.id
-        user = get_user_model().objects.get(id=user_id)
-        if not user:
-            raise AuthenticationFailed('Unauthenticated!')
+        try:
+            user_id = request.user.id
+            user = get_user_model().objects.get(id=user_id)
+            if not user:
+                raise AuthenticationFailed('Unauthenticated!')
 
-        if not user.is_active:
-            raise AuthenticationFailed('User is not active!')
+            if not user.is_active:
+                raise AuthenticationFailed('User is not active!')
 
-        serializer = UserSerializer(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            serializer = UserSerializer(user)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @permission_classes((IsAuthenticated,))
@@ -93,11 +101,9 @@ class UserProfileView(APIView):
 
 @permission_classes((AllowAny,))
 class Logout(KnoxLogoutView):
-    authentication_classes = []
-
     def post(self, request, format=None):
-        logout(request)
-        response = Response()
-        response.delete_cookie(key='token', samesite='none')
-        response.delete_cookie(key='csrftoken', samesite='none')
-        return response
+        username = request.data.get('username')
+        if username:
+            AuthToken.objects.filter(user__username=username).delete()
+
+        return Response({'success': 'Successfully logged out.'})
