@@ -42,6 +42,9 @@ class Register(APIView):
     @staticmethod
     def post(request):
         username = request.data.get('username')
+        email = request.data.get('email')
+        if get_user_model().objects.filter(email=email).exists():
+            raise AuthenticationFailed({'email': ['Email already exists']})
         user_serializer = UserSerializer(data=request.data)
         user_profile_serializer = UserProfileSerializer(data=request.data)
         user_serializer.is_valid(raise_exception=True)

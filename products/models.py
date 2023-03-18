@@ -1,3 +1,4 @@
+from cloudinary.models import CloudinaryField
 from django.db import models
 from .helpers import unique_slugify
 from django.utils.text import slugify
@@ -21,15 +22,7 @@ class Product(models.Model):
     name = models.CharField(max_length=50)
     slug = models.SlugField(max_length=250, blank=True, unique=True)
     description = models.TextField(blank=True)
-    product_images = models.ForeignKey(
-        'ProductImage',
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name='product_images'
-    )
-    attributes = models.ManyToManyField('ProductAttribute', related_name='product_attributes', blank=True)
-    size = models.ManyToManyField('ProductSize', related_name='product_size', blank=True)
+    sizes = models.ManyToManyField('ProductSize', related_name='product_size', blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.PositiveIntegerField()
     available = models.BooleanField(default=True)
@@ -52,6 +45,7 @@ class Product(models.Model):
 
 
 class ProductAttribute(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True, related_name='attributes')
     name = models.CharField(max_length=50)
     value = models.CharField(max_length=50)
 
@@ -59,15 +53,23 @@ class ProductAttribute(models.Model):
         ordering = ('name',)
 
     def __str__(self):
-        return self.value
+        return f'{self.name} - {self.value} - {self.product.name}'
 
 
 class ProductImage(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, related_name='images')
-    image = models.ImageField(upload_to='products/', null=True, blank=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True, related_name='images')
+    image = CloudinaryField('image', null=True, blank=True)
 
     def __str__(self):
-        return self.product.name
+        return self.image.url
+
+
+class ProductVideo(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True, related_name='videos')
+    video = CloudinaryField('video', null=True, blank=True, resource_type='video')
+
+    def __str__(self):
+        return self.video.url
 
 
 class ProductSize(models.Model):

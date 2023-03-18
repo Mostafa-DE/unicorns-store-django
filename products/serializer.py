@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product, ProductAttribute, ProductSize
+from .models import Product, ProductAttribute, ProductSize, ProductImage, ProductVideo
 
 
 class ProductCategorySerializer(serializers.ModelSerializer):
@@ -20,10 +20,35 @@ class SizeSerializer(serializers.ModelSerializer):
         fields = ('size',)
 
 
+class ImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        fields = ['image']
+
+    def to_representation(self, instance):
+        return {
+            'url': instance.image.url,
+        }
+
+
+class VideoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductVideo
+        fields = ['video']
+
+    def to_representation(self, instance):
+        return {
+            'url': instance.video.url,
+            'image': instance.video.video_thumbnail(),
+        }
+
+
 class ProductSerializer(serializers.ModelSerializer):
     category = ProductCategorySerializer()
     attributes = AttributeSerializer(many=True, read_only=True)
-    size = SizeSerializer(many=True, read_only=True)
+    sizes = SizeSerializer(many=True, read_only=True)
+    images = ImageSerializer(many=True, read_only=True)
+    videos = VideoSerializer(many=True, read_only=True)
 
     class Meta:
         model = Product
@@ -33,8 +58,9 @@ class ProductSerializer(serializers.ModelSerializer):
             'name',
             'slug',
             'description',
-            'product_images',
-            'size',
+            'images',
+            'videos',
+            'sizes',
             'attributes',
             'price',
             'stock',

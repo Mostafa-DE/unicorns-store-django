@@ -1,19 +1,30 @@
 from rest_framework import status
+from rest_framework.decorators import permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Product
 from .serializer import ProductSerializer
 
 
+@permission_classes((AllowAny,))
 class ProductsCategoryView(APIView):
+    authentication_classes = []
+
     @staticmethod
     def get(request, category):
-        products = Product.objects.filter(category__slug=category)
-        serializer = ProductSerializer(products, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        try:
+            products = Product.objects.filter(category__slug=category)
+            serializer = ProductSerializer(products, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@permission_classes((AllowAny,))
 class ProductView(APIView):
+    authentication_classes = []
+
     @staticmethod
     def get(request, category, slug):
         try:

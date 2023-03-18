@@ -22,28 +22,61 @@ class CartItemView(APIView):
     @staticmethod
     def post(request):
         try:
-            product = Product.objects.get(id=request.data['product'])
+            product_id = request.data.get('productId')
+            product = Product.objects.get(id=product_id)
             quantity = request.data.get('quantity')
-            cart_item = CartItem.objects.filter(product=product, cart__user=request.user)
+            color = request.data.get('color')
+            size = request.data.get('size')
+            user = request.user
+            cart_item = CartItem.objects.filter(product=product, cart__user=user)
             if cart_item.exists():
-                cart_item = cart_item[0]
-                cart_item.quantity += 1
-                cart_item.save()
-                serializer = CartItemSerializer(cart_item)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                cart = Cart.objects.get(user=request.user)
-                cart_item = CartItem.objects.create(cart=cart, product=product, quantity=quantity)
-                serializer = CartItemSerializer(cart_item)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                if color:
+                    cart_item = cart_item.filter(color=color)
+
+                if size:
+                    cart_item = cart_item.filter(size=size)
+
+                if cart_item.exists():
+                    cart_item = cart_item.first()
+                    cart_item.quantity += 1
+                    cart_item.save()
+                    serializer = CartItemSerializer(cart_item)
+                    return Response(serializer.data, status=status.HTTP_200_OK)
+
+            cart = Cart.objects.get(user=user)
+            cart_item = CartItem.objects.create(
+                cart=cart,
+                product=product,
+                quantity=quantity,
+                color=color,
+                size=size
+            )
+            serializer = CartItemSerializer(cart_item)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         except Product.DoesNotExist:
             return Response({'error': 'Product does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
     @staticmethod
-    def delete(request):
+    def put(request, pk):
         try:
-            cart_item = CartItem.objects.get(cart__user=request.user, id=request.data['id'])
+            qty = request.data.get('qty')
+            if qty < 1:
+                CartItem.objects.get(id=pk).delete()
+                return Response({}, status=status.HTTP_204_NO_CONTENT)
+
+            cart_item = CartItem.objects.get(cart__user=request.user, id=pk)
+            cart_item.quantity = qty
+            cart_item.save()
+            serializer = CartItemSerializer(cart_item)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except CartItem.DoesNotExist:
+            return Response({'error': 'Cart item does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+    @staticmethod
+    def delete(request, pk):
+        try:
+            cart_item = CartItem.objects.get(cart__user=request.user, id=pk)
             cart_item.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
